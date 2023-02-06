@@ -128,9 +128,7 @@ function Navbar({ showNav, setShowNav }) {
                   alt="foto de perfil"
                 />
               </picture>
-              <span className="hidden md:block font-medium text-gray-dark">
-                Mario
-              </span>
+              <span className="hidden md:block font-medium text-gray-dark"></span>
               <ChevronUpDownIcon className="ml-2 h-4 w-4 text-gray-dark" />
             </Menu.Button>
           </div>

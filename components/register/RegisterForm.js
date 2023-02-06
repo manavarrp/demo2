@@ -1,18 +1,14 @@
-import React, { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { connect } from 'react-redux';
+import { signup } from '../../redux/actions/auth';
 import styles from '../../styles/Username.module.css';
-import Link from 'next/link';
-import avatar from '../../public/profile.png';
-import Image from 'next/image';
-import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
-import Error from '../Error';
-import { registerUser } from '../../features/user/authActions';
-import { useRouter } from 'next/router';
-import axios from 'axios';
 import Logo from '../../common/logo';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
+import { useForm } from 'react-hook-form';
+import Link from 'next/link';
 
-function Password() {
+const Signup = ({ signup }) => {
   const munipalities = [
     {
       id: 1,
@@ -49,12 +45,7 @@ function Password() {
       name: 'Extranjeria',
     },
   ];
-
-  const { loading, userInfo, error, success, message } = useSelector(
-    (state) => state.user
-  );
-  const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
+  const [hasPromo, setHasPromo] = useState(false);
 
   const router = useRouter();
 
@@ -63,52 +54,41 @@ function Password() {
   const [getIdSex, setGetIdSex] = useState('');
 
   const [getIdIden, setGetIdIden] = useState('');
+  /* const [munipalities, setMunipalities] = useState([]);
 
-  const [hasPromo, setHasPromo] = useState(false);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get(`http://localhost:8080/user/get`);
+      const newData = await response.json();
+      setMunipalities(await newData);
+      console.log(newData);
+    };
+    fetchData();
+  }, []);
 
-  const onChangeCheckBox = (e) => {
-    setHasPromo(e.target.checked);
-  };
+  const [sexs, setSexs] = useState([]);
 
-  const [promo, setPromo] = useState('');
-  const onChangePromo = (e) => {
-    setPromo(e.target.value);
-  };
-  // const [munipalities, setMunipalities] = useState([]);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get(`http://localhost:8080/user/get`);
+      const newData = await response.json();
+      setSexs(await newData);
+      // console.log(newData);
+    };
+    fetchData();
+  }, []);
 
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await axios.post(`http://localhost:8080/user/get`);
-  //     const newData = await response.json();
-  //     setMunipalities(await newData);
-  //     // console.log(newData);
-  //   };
-  //   fetchData();
-  // }, []);
+  const [typeIdenfications, setTypeIdenfications] = useState([]);
 
-  // const [sexs, setSexs] = useState([]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await axios.post(`http://localhost:8080/user/get`);
-  //     const newData = await response.json();
-  //     setSexs(await newData);
-  //     // console.log(newData);
-  //   };
-  //   fetchData();
-  // }, []);
-
-  // const [typeIdenfications, settypeIdenfications] = useState([]);
-
-  //useEffect(() => {
-  //   const fetchData = async () => {
-  //     const response = await axios.post(`http://localhost:8080/user/get`);
-  //     const newData = await response.json();
-  //     setSexs(await newData);
-  //     // console.log(newData);
-  //   };
-  //   fetchData();
-  // }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await axios.get(`http://localhost:8080/user/get`);
+      const newData = await response.json();
+      setTypeIdenfications(await newData);
+      // console.log(newData);
+    };
+    fetchData();
+  }, []); */
 
   const handleMunipality = (event) => {
     const getId = event.target.value;
@@ -128,23 +108,24 @@ function Password() {
     setGetIdIden(getId);
   };
 
-  useEffect(() => {
-    // redirect user to login page if registration was successful
-    if (success) router.push('/login');
-    // redirect authenticated user to profile screen
-    if (userInfo) router.push('/login');
-  }, [router, userInfo, success]);
+  const onChangeCheckBox = (e) => {
+    setHasPromo(e.target.checked);
+  };
+
+  const [promo, setPromo] = useState('');
+  const onChangePromo = (e) => {
+    setPromo(e.target.value);
+  };
+
+  const { register, handleSubmit } = useForm();
+
+  const [accountCreated, setAccountCreated] = useState(false);
 
   const submitForm = (data) => {
-    // check if passwords match
-    if (data.password !== data.cpassword) {
-      alert('Password mismatch');
-      return;
-    }
-    // transform email string to lowercase to avoid case sensitivity issues in login
-    data.email = data.email.toLowerCase();
-    dispatch(registerUser(data));
-    console.log(data);
+    e.preventDefault();
+    signup(data);
+    setAccountCreated(true);
+    router.push('/login');
   };
 
   return (
@@ -160,19 +141,19 @@ function Password() {
           </div>
 
           <form className="py-1" onSubmit={handleSubmit(submitForm)}>
-            {error && <Error>{error}</Error>}
             <div className="profile flex justify-center py-4">
               <label htmlFor="profile">
-                <Image
-                  src={avatar}
-                  alt="avatar"
-                  className={styles.profile_img}
-                />
+                <picture>
+                  <img
+                    className={styles.profile_img}
+                    src="./profile.png"
+                    alt="avatar"
+                  />
+                </picture>
               </label>
             </div>
 
             <div className="textbox flex flex-col items-center gap-6">
-              {error && <Error>{error}</Error>}
               <div className="name flex w-3/4 gap-6">
                 <input
                   type="text"
@@ -352,8 +333,8 @@ function Password() {
                 />
               )}
 
-              <button type="submit" className={styles.btn} disabled={loading}>
-                {loading ? 'cargando' : 'Register'}
+              <button type="submit" className={styles.btn}>
+                Registrar
               </button>
             </div>
             <div className="text-center py-4">
@@ -370,6 +351,10 @@ function Password() {
       </div>
     </div>
   );
-}
+};
 
-export default Password;
+const mapStateToProps = (state) => ({});
+
+export default connect(mapStateToProps, {
+  signup,
+})(Signup);

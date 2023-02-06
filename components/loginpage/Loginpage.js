@@ -1,35 +1,42 @@
-// LoginScreen.js
-import styles from '../../styles/Username.module.css';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/router';
-import { useDispatch, useSelector } from 'react-redux';
-import Error from '../Error';
-// LoginScreen.js
-import { useEffect, useState } from 'react';
-import { userLogin } from '../../features/user/authActions';
-import Logo from '../../common/logo';
+import { useState, useEffect } from 'react';
 
-const Loginpage = () => {
-  const { loading, userInfo, error } = useSelector((state) => state.user);
-  const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
+import { connect } from 'react-redux';
+import { login } from '../../redux/actions/auth';
+import styles from '../../styles/Username.module.css';
+import Logo from '../../common/logo';
+import Link from 'next/link';
+import { useRouter } from 'next/router';
+
+const Login = ({ login, loading }) => {
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  const [formData, setFormData] = useState({
+    UserName: '',
+    Password: '',
+  });
 
   const router = useRouter();
-  const [activated, setActivated] = useState(false);
-  // redirect authenticated user to profile screen
+  const { UserName, Password } = formData;
 
-  const submitForm = (data) => {
-    console.log(data);
-    dispatch(userLogin(data));
+  const [activated, setActivated] = useState(false);
+
+  const onChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+    login(UserName, Password);
     setActivated(true);
+    console.log(formData);
   };
 
   useEffect(() => {
-    if (userInfo && activated) {
-      router.push('/profile', userInfo);
+    if (activated) {
+      router.push('/profile');
     }
-  }, [router, userInfo, activated]);
+  }, [router, activated]);
 
   return (
     <div className="container mx-auto">
@@ -41,8 +48,7 @@ const Loginpage = () => {
               Credito al alcance de todos
             </span>
           </div>
-          <form className="py-1" onSubmit={handleSubmit(submitForm)}>
-            {error && <Error>{error}</Error>}
+          <form className="py-1" onSubmit={(e) => onSubmit(e)}>
             <div className="profile flex justify-center py-4">
               <picture>
                 <img
@@ -54,24 +60,25 @@ const Loginpage = () => {
             </div>
             <div className="textbox flex flex-col items-center gap-6">
               <input
-                id="email-address"
-                name="email"
                 type="email"
                 placeholder="email"
                 className={styles.textbox}
                 autoFocus
-                {...register('email')}
-                required
+                name="UserName"
+                value={UserName}
+                onChange={(e) => onChange(e)}
               />
               <input
-                id="password"
-                name="password"
                 type="password"
                 placeholder="Contraseña"
                 className={styles.textbox}
-                {...register('password')}
+                name="Password"
+                value={Password}
+                onChange={(e) => onChange(e)}
                 required
               />
+
+              {loading}
               <button type="submit" className={styles.btn} disabled={loading}>
                 {loading ? 'cargando' : 'Login'}
               </button>
@@ -101,4 +108,10 @@ const Loginpage = () => {
   );
 };
 
-export default Loginpage;
+const mapStateToProps = (state) => ({
+  loading: state.Auth.loading,
+});
+
+export default connect(mapStateToProps, {
+  login,
+})(Login);
